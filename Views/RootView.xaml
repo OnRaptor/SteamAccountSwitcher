@@ -148,11 +148,9 @@
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=DataGridRow}}" Value="False">
                                                         <Setter Property="Visibility" Value="Hidden"/>
-                                                        <Setter Property="{Binding Width, ElementName=actionsColumn}" Value="0"/>
                                                     </DataTrigger>
                                                     <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=DataGridRow}}" Value="True">
                                                         <Setter Property="Visibility" Value="Visible"/>
-                                                        <Setter Property="{Binding Width, ElementName=actionsColumn}" Value="170"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
@@ -167,7 +165,6 @@
                                             <SolidColorBrush Color="#303030" Opacity="0.5"/>
                                         </StackPanel.Background>
                                     </StackPanel>
-
                                 </Grid>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
