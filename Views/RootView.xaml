@@ -1,0 +1,185 @@
+﻿<Window x:Class="SteamAccountSwitcher.Views.RootView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:iconPacks="http://metro.mahapps.com/winfx/xaml/iconpacks"
+        xmlns:local="clr-namespace:SteamAccountSwitcher.Views"
+        xmlns:s="https://github.com/canton7/Stylet"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:viewModels="clr-namespace:SteamAccountSwitcher.ViewModels"
+        Width="470"
+        MinWidth="470"
+        Height="600"
+        MinHeight="600"
+        d:DataContext="{d:DesignInstance Type=viewModels:RootViewModel}"
+        mc:Ignorable="d"
+        Title="Steam Account Switcher">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
+    <materialDesign:DialogHost
+        CloseOnClickAway="True"
+        Loaded="{s:Action OnViewFullyLoaded}"
+        SnackbarMessageQueue="{Binding Notifications}"
+        Style="{DynamicResource MaterialDesignEmbeddedDialogHost}">
+        <Grid Background="#292929">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="35"/>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <ProgressBar VerticalAlignment="Top"
+                         IsIndeterminate="{Binding Loading}" />
+            <Label FontSize="17" HorizontalAlignment="Center">Accounts:</Label>
+
+            <materialDesign:PopupBox
+                    Name="settings_popup"
+                    StaysOpen="True"
+                    materialDesign:RippleAssist.IsDisabled="True"
+                    IsEnabled="True"
+                    PlacementMode="BottomAndAlignRightEdges"
+                    PopupMode="Click"
+                HorizontalAlignment="Right">
+                <materialDesign:PopupBox.ToggleContent>
+                    <Button Click="Button_Click" Style="{StaticResource MaterialDesignFlatButton}">
+                        <materialDesign:PackIcon Kind="Cog"/>
+                    </Button>
+                </materialDesign:PopupBox.ToggleContent>
+                <StackPanel>
+                    <Button
+                        Margin="5"
+                        Style="{StaticResource MaterialDesignOutlinedLightButton}"
+                        materialDesign:ButtonProgressAssist.Value="-1"
+                        materialDesign:ButtonProgressAssist.IsIndicatorVisible="{Binding Loading}"
+                        materialDesign:ButtonProgressAssist.IsIndeterminate="True"
+                        Command="{s:Action FetchAccountInfo}"
+                        >Update Info From Steam</Button>
+                    <Button
+                        Margin="5"
+                        Command="{s:Action openUri}" CommandParameter="accounts.json"
+                        Style="{StaticResource MaterialDesignOutlinedLightButton}">
+                        Open accounts storage
+                    </Button>
+                </StackPanel>
+            </materialDesign:PopupBox>
+
+
+            <!--List-->
+            <DataGrid Margin="5" GridLinesVisibility="None" Grid.Row="1" HeadersVisibility="None" ItemsSource="{Binding AccountList,Mode=OneWay}">
+                <DataGrid.CellStyle>
+                    <Style TargetType="DataGridCell" >
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="BorderThickness" Value="0"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.CellStyle>
+                <DataGrid.RowStyle >
+                    <Style x:Name="st" BasedOn="{StaticResource {x:Type DataGridRow}}" TargetType="{x:Type DataGridRow}">
+                        <Style.Setters>
+                            <Setter Property="Background" Value="{DynamicResource MaterialDesignDarkForeground}"/>
+                        </Style.Setters>
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="Transparent" />
+                                <Setter Property="BorderBrush" Value="{x:Null}" />
+                                <Setter Property="BorderThickness" Value="0"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="{x:Null}" />
+                                <Setter Property="BorderBrush" Value="{x:Null}" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="False">
+                                <Setter Property="Background" Value="{x:Null}" />
+                                <Setter Property="BorderBrush" Value="{x:Null}" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </DataGrid.RowStyle>
+
+                <DataGrid.Columns>
+                    <DataGridTemplateColumn Width="*">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Grid>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Ellipse Width="60" Height="60" Margin="3">
+                                            <Ellipse.Fill>
+                                                <ImageBrush ImageSource="{Binding account.ImageUrl}"/>
+                                            </Ellipse.Fill>
+                                        </Ellipse>
+
+                                        <StackPanel Margin="10 0 0 0" VerticalAlignment="Center">
+                                            <TextBlock Foreground="#b0b3b8" FontSize="17">
+                                            <Run Text="{Binding account.ViewName}" Foreground="White"/>
+                                            <Run Foreground="MediumPurple" Text="{Binding account.tag}"/>
+                                            </TextBlock>
+
+                                            <TextBlock Foreground="#b0b3b8" FontSize="13">
+                                            <Italic><Run Text="{Binding account.login}"/></Italic>
+                                            </TextBlock>
+                                        </StackPanel>
+                                        <StackPanel.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem 
+                                                Command="{s:Action openUri}"
+                                                CommandParameter="{Binding account.SteamUrl}"
+                                                Foreground="White"
+                                                Header="Open profile"/>
+                                            </ContextMenu>
+                                        </StackPanel.ContextMenu>
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Command="{s:Action Login}" ToolTip="Run Steam and login" CommandParameter="{Binding}">
+                                            <iconPacks:Material Kind="LoginVariant"/>
+                                        </Button>
+                                        <Button Command="{s:Action EditAccount}" CommandParameter="{Binding}">
+                                            <iconPacks:Material Kind="AccountEdit"/>
+                                        </Button>
+                                        <Button Command="{s:Action RemoveAccount}" CommandParameter="{Binding}">
+                                            <iconPacks:Material Kind="Delete"/>
+                                        </Button>
+
+                                        <StackPanel.Resources>
+                                            <Style TargetType="StackPanel">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=DataGridRow}}" Value="False">
+                                                        <Setter Property="Visibility" Value="Hidden"/>
+                                                        <Setter Property="{Binding Width, ElementName=actionsColumn}" Value="0"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Mode=FindAncestor,AncestorType=DataGridRow}}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                        <Setter Property="{Binding Width, ElementName=actionsColumn}" Value="170"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+
+                                            <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
+                                                <Style.Setters>
+                                                    <Setter Property="Margin" Value="3"/>
+                                                </Style.Setters>
+                                            </Style>
+                                        </StackPanel.Resources>
+                                        <StackPanel.Background>
+                                            <SolidColorBrush Color="#303030" Opacity="0.5"/>
+                                        </StackPanel.Background>
+                                    </StackPanel>
+
+                                </Grid>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <Button Grid.RowSpan="2" Command="{s:Action AddAccount}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10" Padding="0" Style="{StaticResource MaterialDesignFloatingActionButton}">
+                <iconPacks:Material Kind="Plus"/>
+            </Button>
+
+            <materialDesign:Snackbar Grid.RowSpan="2" MessageQueue="{Binding Notifications}" />
+        </Grid>
+    </materialDesign:DialogHost>
+</Window>
