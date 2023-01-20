@@ -39,11 +39,10 @@ namespace SteamAccountSwitcher.Model
             }
         }
 
-        public static async void Login(string login, string pass)
+        public static void Login(string login, string pass)
         {
             if (SteamRunning())
                 LogOut();
-            await Task.Delay(2000);
             Process steam_process = new Process()
             {
                 StartInfo = new ProcessStartInfo()
@@ -79,8 +78,7 @@ namespace SteamAccountSwitcher.Model
                 CreateNoWindow = true,
                 FileName = "cmd.exe",
                 Arguments = "/c taskkill /im steam.exe /f",
-                WindowStyle = ProcessWindowStyle.Hidden,
-                UseShellExecute = true
+                WindowStyle = ProcessWindowStyle.Hidden
             });
         }
         private static string ConvertSteamId(string steamID64)
@@ -111,53 +109,6 @@ namespace SteamAccountSwitcher.Model
             }
             catch { return null; }
         }
-        static void CopyDirectory(string begin_dir, string end_dir)
-        {
-            //Берём нашу исходную папку
-            DirectoryInfo dir_inf = new DirectoryInfo(begin_dir);
-            //Перебираем все внутренние папки
-            foreach (DirectoryInfo dir in dir_inf.GetDirectories())
-            {
-                //Проверяем - если директории не существует, то создаём;
-                if (Directory.Exists(end_dir + "\\" + dir.Name) != true)
-                {
-                    Directory.CreateDirectory(end_dir + "\\" + dir.Name);
-                }
-
-                //Рекурсия (перебираем вложенные папки и делаем для них то-же самое).
-                CopyDirectory(dir.FullName, end_dir + "\\" + dir.Name);
-            }
-
-            //Перебираем файлики в папке источнике.
-            foreach (string file in Directory.GetFiles(begin_dir))
-            {
-                //Определяем (отделяем) имя файла с расширением - без пути (но с слешем "\").
-                string filik = file.Substring(file.LastIndexOf('\\'), file.Length - file.LastIndexOf('\\'));
-                //Копируем файлик с перезаписью из источника в приёмник.
-                File.Copy(file, end_dir + "\\" + filik, true);
-            }
-        }
-
-        public static void ExportSetting(string origin, string dest, List<Game> games)
-        {
-            //in develop...
-            origin = ConvertSteamId(origin.ToString());
-            dest = ConvertSteamId(dest.ToString());
-
-            string path = $"{location}\\userdata\\{dest}\\";
-            string path_origin = $"{location}\\userdata\\{origin}\\";
-            //Delete folders in dest and copy folders from origin to dest
-            foreach (var game in games)
-            {
-                if (Directory.Exists(path + game.id))
-                {
-                    Directory.Delete(path + game.id, true);
-                    Directory.CreateDirectory(path + game.id);
-                }
-                CopyDirectory(path_origin + game.id, path + game.id);
-
-            }
-        }
 
         public static async Task<Account> FetchProfileData(Account account, Action FallbackCallback, bool caching = true)
         {
@@ -184,7 +135,6 @@ namespace SteamAccountSwitcher.Model
                     XmlElement xRoot = doc.DocumentElement;
                     if (xRoot != null)
                     {
-                        // обход всех узлов в корневом элементе
                         foreach (XmlElement xnode in xRoot)
                         {
                             if (xnode.Name == "steamID")
