@@ -11,6 +11,7 @@ using System.Text.Json;
 using System.IO;
 using System.Xml;
 using System.Windows;
+using System.Threading;
 
 namespace SteamAccountSwitcher.Model
 {
@@ -26,23 +27,26 @@ namespace SteamAccountSwitcher.Model
         public static string location = GetLocationSteam();
 
 
-        public static string SteamStatus()
+        public static Task<string> SteamStatus()
         {
-            try
-            {
-                WebRequest.Create("https://steamcommunity.com/").GetResponse();
-                return "OK";
-            }
-            catch (Exception ex)
-            {
-                return "NoConnection: " + ex.Message;
-            }
+            return Task.Run(() => {
+				try
+				{
+					WebRequest.Create("https://steamcommunity.com/").GetResponse();
+					return "OK";
+				}
+				catch (Exception ex)
+				{
+					return "NoConnection: " + ex.Message;
+				}
+			});
         }
 
         public static void Login(string login, string pass)
         {
             if (SteamRunning())
                 LogOut();
+            Thread.Sleep(1000);
             Process steam_process = new Process()
             {
                 StartInfo = new ProcessStartInfo()

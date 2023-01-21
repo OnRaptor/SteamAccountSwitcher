@@ -34,9 +34,9 @@ namespace SteamAccountSwitcher.ViewModels
         {
             await Task.Run(() =>
             {
-                Notifications.Enqueue("Running Steam...");
                 SteamProvider.Login(acc.account.login, acc.account.password);
-            });
+				Notifications.Enqueue("Running Steam...");
+			});
         }
 
         public async void AddAccount()
@@ -105,7 +105,7 @@ namespace SteamAccountSwitcher.ViewModels
             else
                 UpdateAccountList();
 
-            var steam_status = SteamProvider.SteamStatus();
+            var steam_status = await SteamProvider.SteamStatus();
             if (steam_status != "OK")
                 Notifications.Enqueue("Bad steam status\n" + steam_status, "OK", null);
 
